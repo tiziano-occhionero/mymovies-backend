@@ -26,6 +26,21 @@ public class FilmController {
     public Film addFilm(@RequestBody Film film) {
         return filmService.saveFilm(film);
     }
+    
+    @GetMapping("/collezione")
+    public List<Film> getCollezione() {
+        return filmService.getByProvenienza("collezione");
+    }
+
+    @GetMapping("/lista-desideri")
+    public List<Film> getListaDesideri() {
+        return filmService.getByProvenienza("lista");
+    }
+
+    @PutMapping("/{id}/provenienza")
+    public Film aggiornaProvenienza(@PathVariable String id, @RequestBody String nuovaProvenienza) {
+        return filmService.aggiornaProvenienza(id, nuovaProvenienza);
+    }
 
     @DeleteMapping("/{id}")
     public void deleteFilm(@PathVariable String id) {

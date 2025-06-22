@@ -18,6 +18,17 @@ public class FilmService {
     public List<Film> getAllFilms() {
         return filmRepository.findAll();
     }
+    
+    public List<Film> getByProvenienza(String provenienza) {
+        return filmRepository.findByProvenienza(provenienza);
+    }
+
+    public Film aggiornaProvenienza(String id, String nuovaProvenienza) {
+        Film film = filmRepository.findById(id).orElseThrow(() -> new RuntimeException("Film non trovato"));
+        film.setProvenienza(nuovaProvenienza);
+        return filmRepository.save(film);
+    }
+
 
     public Film saveFilm(Film film) {
         return filmRepository.save(film);
