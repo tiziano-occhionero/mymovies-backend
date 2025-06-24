@@ -23,12 +23,15 @@ public class FilmService {
         return filmRepository.findByProvenienza(provenienza);
     }
 
+    public Film getFilmById(String id) {
+        return filmRepository.findById(id).orElse(null);
+    }
+    
     public Film aggiornaProvenienza(String id, String nuovaProvenienza) {
         Film film = filmRepository.findById(id).orElseThrow(() -> new RuntimeException("Film non trovato"));
         film.setProvenienza(nuovaProvenienza);
         return filmRepository.save(film);
     }
-
 
     public Film saveFilm(Film film) {
         return filmRepository.save(film);
@@ -37,4 +40,13 @@ public class FilmService {
     public void deleteFilmById(String id) {
         filmRepository.deleteById(id);
     }
+    
+    public boolean rimuoviFilm(String id) {
+        if (filmRepository.existsById(id)) {
+            filmRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
 }
