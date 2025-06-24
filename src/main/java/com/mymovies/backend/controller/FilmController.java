@@ -30,8 +30,9 @@ public class FilmController {
 
     @GetMapping("/lista-desideri")
     public List<Film> getListaDesideri() {
-        return filmService.getByProvenienza("lista");
+        return filmService.getByProvenienza("wishlist");  // <- correzione qui
     }
+
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilmById(@PathVariable String id) {
@@ -47,6 +48,13 @@ public class FilmController {
     public Film addFilm(@RequestBody Film film) {
     	return filmService.saveFilm(film);
     }
+    
+    @PostMapping("/wishlist")
+    public Film aggiungiAllaWishlist(@RequestBody Film film) {
+        film.setProvenienza("wishlist"); // Forziamo che sia wishlist
+        return filmService.saveFilm(film);
+    }
+
     
     @PutMapping("/{id}/provenienza")
     public Film aggiornaProvenienza(@PathVariable String id, @RequestBody String nuovaProvenienza) {
