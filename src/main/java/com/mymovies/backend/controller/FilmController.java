@@ -2,6 +2,9 @@ package com.mymovies.backend.controller;
 
 import com.mymovies.backend.model.Film;
 import com.mymovies.backend.service.FilmService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +31,10 @@ public class FilmController {
         return filmService.getByProvenienza("collezione");
     }
 
-    // GET /api/films/wishlist → Restituisce tutti i film in wishlist
     @GetMapping("/wishlist")
     public List<Film> getWishlist() {
         return filmService.getByProvenienza("wishlist");
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<Film> getFilmById(@PathVariable String id) {
@@ -44,19 +45,18 @@ public class FilmController {
             return ResponseEntity.notFound().build();
         }
     }
-    
-    @PostMapping
-    public Film addFilm(@RequestBody Film film) {
-    	return filmService.saveFilm(film);
-    }
-    
+        
     @PostMapping("/wishlist")
     public Film aggiungiAllaWishlist(@RequestBody Film film) {
         film.setProvenienza("wishlist"); // Forziamo che sia wishlist
         return filmService.saveFilm(film);
     }
-
     
+    @PostMapping
+    public ResponseEntity<Film> aggiungiFilm(@Valid @RequestBody Film film) {
+        return ResponseEntity.ok(filmService.saveFilm(film));
+    }
+   
     @PutMapping("/{id}/provenienza")
     public Film aggiornaProvenienza(@PathVariable String id, @RequestBody String nuovaProvenienza) {
         return filmService.aggiornaProvenienza(id, nuovaProvenienza);
@@ -71,8 +71,5 @@ public class FilmController {
             return ResponseEntity.notFound().build();
         }
     }
-
-
-
 
 }
