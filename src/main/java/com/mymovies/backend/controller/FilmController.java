@@ -28,9 +28,10 @@ public class FilmController {
         return filmService.getByProvenienza("collezione");
     }
 
-    @GetMapping("/lista-desideri")
-    public List<Film> getListaDesideri() {
-        return filmService.getByProvenienza("wishlist");  // <- correzione qui
+    // GET /api/films/wishlist → Restituisce tutti i film in wishlist
+    @GetMapping("/wishlist")
+    public List<Film> getWishlist() {
+        return filmService.getByProvenienza("wishlist");
     }
 
 
@@ -65,10 +66,13 @@ public class FilmController {
     public ResponseEntity<Void> eliminaFilm(@PathVariable String id) {
         boolean rimosso = filmService.rimuoviFilm(id);
         if (rimosso) {
-            return ResponseEntity.noContent().build(); // 204 No Content
+            return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.notFound().build();  // 404 Not Found
+            return ResponseEntity.notFound().build();
         }
     }
+
+
+
 
 }
