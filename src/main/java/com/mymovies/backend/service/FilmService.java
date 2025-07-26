@@ -9,44 +9,31 @@ import java.util.List;
 @Service
 public class FilmService {
 
-    private final FilmRepository filmRepository;
+	private final FilmRepository filmRepository;
 
-    public FilmService(FilmRepository filmRepository) {
-        this.filmRepository = filmRepository;
-    }
+	public FilmService(FilmRepository filmRepository) {
+		this.filmRepository = filmRepository;
+	}
 
-    public List<Film> getAllFilms() {
-        return filmRepository.findAll();
-    }
-    
-    public List<Film> getByProvenienza(String provenienza) {
-        return filmRepository.findByProvenienza(provenienza);
-    }
+	public List<Film> getAllFilms() {
+		return filmRepository.findAll();
+	}
 
-    public Film getFilmById(String id) {
-        return filmRepository.findById(id).orElse(null);
-    }
-    
-    public Film aggiornaProvenienza(String id, String nuovaProvenienza) {
-        Film film = filmRepository.findById(id).orElseThrow(() -> new RuntimeException("Film non trovato"));
-        film.setProvenienza(nuovaProvenienza);
-        return filmRepository.save(film);
-    }
+	public List<Film> getByProvenienza(String provenienza) {
+		return filmRepository.findByProvenienza(provenienza);
+	}
 
-    public Film saveFilm(Film film) {
-        return filmRepository.save(film);
-    }
+	public Film getFilmById(String id) {
+		return filmRepository.findById(id).orElse(null);
+	}
 
-    public void deleteFilmById(String id) {
-        filmRepository.deleteById(id);
-    }
-    
-    public boolean rimuoviFilm(String id) {
-        if (filmRepository.existsById(id)) {
-            filmRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
+	public Film saveFilm(Film film) {
+		System.out.println("▶️ Salvataggio film: " + film);
+		return filmRepository.save(film);
+	}
+
+	public void deleteFilmById(String id) {
+		filmRepository.deleteById(id);
+	}
 
 }
