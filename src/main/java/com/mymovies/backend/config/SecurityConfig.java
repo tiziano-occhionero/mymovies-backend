@@ -2,6 +2,7 @@ package com.mymovies.backend.config;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,16 +20,23 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @Configuration
 public class SecurityConfig {
 
-    // Utente admin in memoria
+    // Leggi credenziali da properties / env (con default sicuri per lo sviluppo locale)
+    @Value("${mmc.admin.user:user}")
+    private String adminUser;
+
+    @Value("${mmc.admin.password:1234}")
+    private String adminPassword;
+
     @Bean
-    UserDetailsService userDetailsService(PasswordEncoder encoder) {
+    UserDetailsService userDetailsService(PasswordEncoder encoder, AdminProperties adminProps) {
         return new InMemoryUserDetailsManager(
-            User.withUsername("tiziano")
-                .password(encoder.encode("LaTuaPassword123!"))
+            User.withUsername(adminProps.getUser())
+                .password(encoder.encode(adminProps.getPassword()))
                 .roles("ADMIN")
                 .build()
         );
     }
+
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -54,19 +62,12 @@ public class SecurityConfig {
             .cors(c -> {})
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                // ✅ SOLO i GET sono pubblici
                 .requestMatchers(HttpMethod.GET, "/api/films/**").permitAll()
-
-                // 🔒 tutto il resto sotto /api/films/** è protetto (POST/DELETE inclusi)
                 .requestMatchers("/api/films/**").hasRole("ADMIN")
-
-                // qualsiasi altra cosa: libera (es. statici)
                 .anyRequest().permitAll()
             )
-            .httpBasic(b -> {}); // Basic Auth
+            .httpBasic(b -> {});
 
         return http.build();
     }
