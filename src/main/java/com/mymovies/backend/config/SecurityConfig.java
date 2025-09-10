@@ -53,33 +53,15 @@ public class SecurityConfig {
 		return source;
 	}
 
-	// Metodo preciso: dentro la classe SecurityConfig
+	// Metodo preciso: definizione del SecurityFilterChain per API stateless + CORS
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-				// CORS: usa le impostazioni del WebMvcConfigurer (WebConfig)
-				.cors(withDefaults())
-
-				// API stateless: niente CSRF
-				.csrf(csrf -> csrf.disable())
-
-				// Nessuna sessione server-side
+		http.cors(withDefaults()) // usa CORS da WebConfig
+				.csrf(csrf -> csrf.disable()) // API stateless → niente CSRF
 				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-				// Regole di autorizzazione
 				.authorizeHttpRequests(auth -> auth
-						// consenti swagger in dev (se lo usi anche in prod valuta)
-						.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-						// health in chiaro se aggiungi actuator
-						.requestMatchers("/actuator/health").permitAll()
-						// endpoint di autenticazione pubblici, se presenti
-						.requestMatchers("/api/auth/**").permitAll()
-						// tutto il resto protetto (se non hai auth, temporaneamente puoi usare
-						// .permitAll())
-						.anyRequest().authenticated());
-
-		// Se NON hai ancora JWT/Basic, per il primo smoke test puoi consentire tutto:
-		// http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+						// smoke test: tutto aperto. (Rendere più restrittivo dopo i test)
+						.anyRequest().permitAll());
 
 		return http.build();
 	}
