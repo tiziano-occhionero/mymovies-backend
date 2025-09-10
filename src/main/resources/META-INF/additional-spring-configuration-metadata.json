@@ -1,0 +1,29 @@
+{
+  "properties": [
+    {
+      "name": "app.cors.allowed-origins",
+      "type": "java.lang.String",
+      "description": "Elenco separato da virgola delle origini abilitate al CORS (es: https://tiziano-occhionero.github.io,https://tiziano-occhionero.github.io/my-movies-collection)"
+    },
+    {
+      "name": "app.cors.allowed-methods",
+      "type": "java.lang.String",
+      "description": "Metodi HTTP consentiti per CORS (CSV, es: GET,POST,PUT,DELETE,OPTIONS)"
+    },
+    {
+      "name": "app.cors.allowed-headers",
+      "type": "java.lang.String",
+      "description": "Header consentiti per CORS (CSV, es: Authorization,Content-Type,Accept)"
+    },
+    {
+      "name": "mmc.admin.user",
+      "type": "java.lang.String",
+      "description": "Utente admin iniziale (proprietà custom dell’app, se usata)."
+    },
+    {
+      "name": "mmc.admin.password",
+      "type": "java.lang.String",
+      "description": "Password admin iniziale (proprietà custom dell’app, se usata)."
+    }
+  ]
+}
