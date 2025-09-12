@@ -1,11 +1,9 @@
 package com.mymovies.backend.config;
 
-import java.util.List;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -18,52 +16,78 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.time.Duration;
+import java.util.Arrays;
+
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 public class SecurityConfig {
 
-	// Leggi credenziali da properties / env (con default sicuri per lo sviluppo
-	// locale)
-	@Value("${mmc.admin.user:user}")
-	private String adminUser;
+    // === Credenziali admin da ENV/props (con default di sviluppo) ===
+    @Value("${mmc.admin.user:user}")
+    private String adminUser;
 
-	@Value("${mmc.admin.password:1234}")
-	private String adminPassword;
+    @Value("${mmc.admin.password:1234}")
+    private String adminPassword;
 
-	@Bean
-	UserDetailsService userDetailsService(PasswordEncoder encoder, AdminProperties adminProps) {
-		return new InMemoryUserDetailsManager(User.withUsername(adminProps.getUser())
-				.password(encoder.encode(adminProps.getPassword())).roles("ADMIN").build());
-	}
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    UserDetailsService userDetailsService(PasswordEncoder encoder) {
+        return new InMemoryUserDetailsManager(
+            User.withUsername(adminUser)
+                .password(encoder.encode(adminPassword))
+                .roles("ADMIN")
+                .build()
+        );
+    }
 
-	// CORS per Angular
-	@Bean
-	CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration cfg = new CorsConfiguration();
-		cfg.setAllowedOrigins(List.of("http://localhost:4200"));
-		cfg.setAllowedMethods(List.of("GET", "POST", "DELETE", "OPTIONS"));
-		cfg.setAllowedHeaders(List.of("Content-Type", "Authorization"));
-		cfg.setAllowCredentials(false);
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", cfg);
-		return source;
-	}
+    // === CORS: origini/metodi/header da properties (mappati da ENV su Render) ===
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(
+            @Value("${app.cors.allowed-origins:*}") String origins,
+            @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}") String methods,
+            @Value("${app.cors.allowed-headers:Authorization,Content-Type,Accept}") String headers
+    ) {
+        CorsConfiguration cfg = new CorsConfiguration();
 
-	// Metodo preciso: definizione del SecurityFilterChain per API stateless + CORS
-	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.cors(withDefaults()) // usa CORS da WebConfig
-				.csrf(csrf -> csrf.disable()) // API stateless → niente CSRF
-				.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth
-						// smoke test: tutto aperto. (Rendere più restrittivo dopo i test)
-						.anyRequest().permitAll());
+        Arrays.stream(origins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .forEach(cfg::addAllowedOrigin); // <- niente path, solo schema+host(+porta)
 
-		return http.build();
-	}
+        Arrays.stream(methods.split(","))
+                .map(String::trim)
+                .forEach(cfg::addAllowedMethod);
 
+        Arrays.stream(headers.split(","))
+                .map(String::trim)
+                .forEach(cfg::addAllowedHeader);
+
+        cfg.setAllowCredentials(true);
+        cfg.setMaxAge(Duration.ofHours(1));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
+    }
+
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .cors(withDefaults())
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight deve passare
+                .anyRequest().authenticated()
+            )
+            .httpBasic(withDefaults()); // Basic Auth
+
+        return http.build();
+    }
 }
