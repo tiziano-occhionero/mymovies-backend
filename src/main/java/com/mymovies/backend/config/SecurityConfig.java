@@ -104,7 +104,8 @@ public class SecurityConfig {
                 .requestMatchers("/error").permitAll()
 
                 // tutto il resto richiede autenticazione (POST/PUT/DELETE…)
-                .anyRequest().authenticated()
+                //.anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
             .httpBasic(withDefaults());
 
