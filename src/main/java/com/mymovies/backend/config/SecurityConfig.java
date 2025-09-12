@@ -15,11 +15,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
+import static org.springframework.security.config.Customizer.withDefaults;
 import java.time.Duration;
 import java.util.Arrays;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import java.util.stream.Collectors;
 
 @Configuration
 public class SecurityConfig {
@@ -51,17 +50,24 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origins:*}") String origins,
             @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}") String methods,
-            @Value("${app.cors.allowed-headers:Authorization,Content-Type,Accept}") String headers) {
-
+            @Value("${app.cors.allowed-headers:Authorization,Content-Type,Accept}") String headers
+    ) {
         CorsConfiguration cfg = new CorsConfiguration();
 
-        Arrays.stream(origins.split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .forEach(cfg::addAllowedOrigin); // niente path, solo schema+host(+porta)
+        // usa PATTERN per essere più tollerante (equivale agli origins passati)
+        cfg.setAllowedOriginPatterns(
+            Arrays.stream(origins.split(","))
+                  .map(String::trim)
+                  .filter(s -> !s.isEmpty())
+                  .collect(Collectors.toList())
+        );
 
-        Arrays.stream(methods.split(",")).map(String::trim).forEach(cfg::addAllowedMethod);
-        Arrays.stream(headers.split(",")).map(String::trim).forEach(cfg::addAllowedHeader);
+        cfg.setAllowedMethods(
+            Arrays.stream(methods.split(",")).map(String::trim).collect(Collectors.toList())
+        );
+        cfg.setAllowedHeaders(
+            Arrays.stream(headers.split(",")).map(String::trim).collect(Collectors.toList())
+        );
 
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(Duration.ofHours(1));
@@ -79,7 +85,10 @@ public class SecurityConfig {
             .cors(withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight
+                // importantissimo: preflight libero SEMPRE
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                // /error lo lasciamo aperto per evitare 403 strani su preflight deviato
+                .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(withDefaults());
