@@ -3,7 +3,6 @@ package com.mymovies.backend.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -22,6 +21,7 @@ import java.util.stream.Collectors;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.core.Ordered;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.CorsUtils;
 
 @Configuration
 public class SecurityConfig {
@@ -87,15 +87,15 @@ public class SecurityConfig {
 
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                            CorsConfigurationSource corsSource) throws Exception {
         http
+            .cors(c -> c.configurationSource(corsSource))   // usa il bean esplicito
             .csrf(csrf -> csrf.disable())
-            .cors(withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // importantissimo: preflight libero SEMPRE
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                // /error lo lasciamo aperto per evitare 403 strani su preflight deviato
+                // preflight SEMPRE permesso (detector ufficiale)
+                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             )
