@@ -3,6 +3,7 @@ package com.mymovies.backend.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
@@ -15,13 +16,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import static org.springframework.security.config.Customizer.withDefaults;
+
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.core.Ordered;
-import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.cors.CorsUtils;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -48,16 +51,15 @@ public class SecurityConfig {
         );
     }
 
- // === CORS: origini/metodi/header da properties (mappati da ENV su Render) ===
+    // === CORS configurabile via properties/ENV ===
     @Bean
     CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origins:*}") String origins,
             @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}") String methods,
-            @Value("${app.cors.allowed-headers:*}") String headers // default più permissivo
+            @Value("${app.cors.allowed-headers:*}") String headers
     ) {
         CorsConfiguration cfg = new CorsConfiguration();
 
-        // origins: SOLO schema+host(+porta). (Usiamo patterns per tolleranza)
         cfg.setAllowedOriginPatterns(
             Arrays.stream(origins.split(","))
                   .map(String::trim)
@@ -65,10 +67,9 @@ public class SecurityConfig {
                   .collect(Collectors.toList())
         );
 
-        // consentiamo tutti gli header richiesti dal browser (minuscolo/maiuscolo)
+        // consenti tutti gli header richiesti dal browser
         cfg.setAllowedHeaders(Arrays.asList("*"));
 
-        // metodi: la tua lista va bene; se vuoi, puoi anche fare "*" per massima tolleranza
         cfg.setAllowedMethods(
             Arrays.stream(methods.split(","))
                   .map(String::trim)
@@ -84,30 +85,33 @@ public class SecurityConfig {
         return source;
     }
 
-
-
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http,
                                             CorsConfigurationSource corsSource) throws Exception {
         http
-            .cors(c -> c.configurationSource(corsSource))   // usa il bean esplicito
+            .cors(c -> c.configurationSource(corsSource))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // preflight SEMPRE permesso (detector ufficiale)
+                // preflight SEMPRE permesso
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+
+                // 🔓 GET/HEAD pubblici sulle API dei film (lettura senza login)
+                .requestMatchers(HttpMethod.GET,  "/api/films/**").permitAll()
+                .requestMatchers(HttpMethod.HEAD, "/api/films/**").permitAll()
+
+                // lascia /error aperto per evitare 403 anomali
                 .requestMatchers("/error").permitAll()
+
+                // tutto il resto richiede autenticazione (POST/PUT/DELETE…)
                 .anyRequest().authenticated()
             )
             .httpBasic(withDefaults());
 
         return http.build();
     }
-    
-    /**
-     * Forza il CorsFilter a stare in cima alla filter chain (prima di Spring Security).
-     * Utile con proxy/CDN dove altrimenti il preflight può ricevere 403.
-     */
+
+    /** Metti il CorsFilter in testa alla chain (utile dietro CDN/proxy). */
     @Bean
     FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
         FilterRegistrationBean<CorsFilter> bean =
@@ -115,5 +119,4 @@ public class SecurityConfig {
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }
-
 }
