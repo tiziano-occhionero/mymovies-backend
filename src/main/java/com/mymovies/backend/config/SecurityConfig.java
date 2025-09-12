@@ -48,16 +48,16 @@ public class SecurityConfig {
         );
     }
 
-    // === CORS: origini/metodi/header da properties (mappati da ENV su Render) ===
+ // === CORS: origini/metodi/header da properties (mappati da ENV su Render) ===
     @Bean
     CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origins:*}") String origins,
             @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}") String methods,
-            @Value("${app.cors.allowed-headers:Authorization,Content-Type,Accept}") String headers
+            @Value("${app.cors.allowed-headers:*}") String headers // default più permissivo
     ) {
         CorsConfiguration cfg = new CorsConfiguration();
 
-        // usa PATTERN per essere più tollerante (equivale agli origins passati)
+        // origins: SOLO schema+host(+porta). (Usiamo patterns per tolleranza)
         cfg.setAllowedOriginPatterns(
             Arrays.stream(origins.split(","))
                   .map(String::trim)
@@ -65,20 +65,25 @@ public class SecurityConfig {
                   .collect(Collectors.toList())
         );
 
+        // consentiamo tutti gli header richiesti dal browser (minuscolo/maiuscolo)
+        cfg.setAllowedHeaders(Arrays.asList("*"));
+
+        // metodi: la tua lista va bene; se vuoi, puoi anche fare "*" per massima tolleranza
         cfg.setAllowedMethods(
-            Arrays.stream(methods.split(",")).map(String::trim).collect(Collectors.toList())
-        );
-        cfg.setAllowedHeaders(
-            Arrays.stream(headers.split(",")).map(String::trim).collect(Collectors.toList())
+            Arrays.stream(methods.split(","))
+                  .map(String::trim)
+                  .collect(Collectors.toList())
         );
 
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(Duration.ofHours(1));
+        cfg.setExposedHeaders(Arrays.asList("Location","Authorization","Content-Type"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", cfg);
         return source;
     }
+
 
 
     @Bean
