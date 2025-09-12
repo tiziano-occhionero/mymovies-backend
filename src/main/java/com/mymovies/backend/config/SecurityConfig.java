@@ -19,6 +19,9 @@ import static org.springframework.security.config.Customizer.withDefaults;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.core.Ordered;
+import org.springframework.web.filter.CorsFilter;
 
 @Configuration
 public class SecurityConfig {
@@ -94,6 +97,18 @@ public class SecurityConfig {
             .httpBasic(withDefaults());
 
         return http.build();
+    }
+    
+    /**
+     * Forza il CorsFilter a stare in cima alla filter chain (prima di Spring Security).
+     * Utile con proxy/CDN dove altrimenti il preflight può ricevere 403.
+     */
+    @Bean
+    FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
+        FilterRegistrationBean<CorsFilter> bean =
+                new FilterRegistrationBean<>(new CorsFilter(source));
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 
 }
