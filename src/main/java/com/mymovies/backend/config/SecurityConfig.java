@@ -51,22 +51,17 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource(
             @Value("${app.cors.allowed-origins:*}") String origins,
             @Value("${app.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}") String methods,
-            @Value("${app.cors.allowed-headers:Authorization,Content-Type,Accept}") String headers
-    ) {
+            @Value("${app.cors.allowed-headers:Authorization,Content-Type,Accept}") String headers) {
+
         CorsConfiguration cfg = new CorsConfiguration();
 
         Arrays.stream(origins.split(","))
                 .map(String::trim)
                 .filter(s -> !s.isEmpty())
-                .forEach(cfg::addAllowedOrigin); // <- niente path, solo schema+host(+porta)
+                .forEach(cfg::addAllowedOrigin); // niente path, solo schema+host(+porta)
 
-        Arrays.stream(methods.split(","))
-                .map(String::trim)
-                .forEach(cfg::addAllowedMethod);
-
-        Arrays.stream(headers.split(","))
-                .map(String::trim)
-                .forEach(cfg::addAllowedHeader);
+        Arrays.stream(methods.split(",")).map(String::trim).forEach(cfg::addAllowedMethod);
+        Arrays.stream(headers.split(",")).map(String::trim).forEach(cfg::addAllowedHeader);
 
         cfg.setAllowCredentials(true);
         cfg.setMaxAge(Duration.ofHours(1));
@@ -76,6 +71,7 @@ public class SecurityConfig {
         return source;
     }
 
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -83,11 +79,12 @@ public class SecurityConfig {
             .cors(withDefaults())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight deve passare
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // preflight
                 .anyRequest().authenticated()
             )
-            .httpBasic(withDefaults()); // Basic Auth
+            .httpBasic(withDefaults());
 
         return http.build();
     }
+
 }
