@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.Ordered;
 import org.springframework.web.filter.CorsFilter;
 
@@ -115,7 +116,8 @@ public class SecurityConfig {
 
     /** Metti il CorsFilter in testa alla chain (utile dietro CDN/proxy). */
     @Bean
-    FilterRegistrationBean<CorsFilter> corsFilterRegistration(CorsConfigurationSource source) {
+    FilterRegistrationBean<CorsFilter> corsFilterRegistration(
+            @Qualifier("corsConfigurationSource") CorsConfigurationSource source) {
         FilterRegistrationBean<CorsFilter> bean =
                 new FilterRegistrationBean<>(new CorsFilter(source));
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
