@@ -86,41 +86,32 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                            CorsConfigurationSource corsSource) throws Exception {
+                                            @Qualifier("corsConfigurationSource") CorsConfigurationSource corsSource) throws Exception {
         http
             .cors(c -> c.configurationSource(corsSource))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // CORS: sempre liberi i preflight
                 .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
-
-                // >>> QUI: GET/HEAD liberi su tutte le API
-                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.GET,  "/api/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.HEAD, "/api/**").permitAll()
-
-                // opzionale: apri anche Swagger se lo usi
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
-
-                // error libero per evitare rimbalzi strani
                 .requestMatchers("/error").permitAll()
-
-                // tutto il resto autenticato (POST/PUT/DELETE…)
                 .anyRequest().authenticated()
             )
             .httpBasic(withDefaults());
-
         return http.build();
     }
+
 
 
     /** Metti il CorsFilter in testa alla chain (utile dietro CDN/proxy). */
     @Bean
     FilterRegistrationBean<CorsFilter> corsFilterRegistration(
             @Qualifier("corsConfigurationSource") CorsConfigurationSource source) {
-        FilterRegistrationBean<CorsFilter> bean =
-                new FilterRegistrationBean<>(new CorsFilter(source));
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return bean;
     }
+
 }
