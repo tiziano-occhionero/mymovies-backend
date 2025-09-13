@@ -93,20 +93,27 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-            	    // Preflight sempre libero
-            	    .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
-            	    .requestMatchers("/error").permitAll()
+                // CORS: sempre liberi i preflight
+                .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
 
-            	    // >>> QUI: GET pubblici sulle API
-            	    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/**").permitAll()
+                // >>> QUI: GET/HEAD liberi su tutte le API
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.HEAD, "/api/**").permitAll()
 
-            	    // Tutto il resto autenticato (POST/PUT/DELETE…)
-            	    .anyRequest().authenticated()
-            	)
+                // opzionale: apri anche Swagger se lo usi
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
+
+                // error libero per evitare rimbalzi strani
+                .requestMatchers("/error").permitAll()
+
+                // tutto il resto autenticato (POST/PUT/DELETE…)
+                .anyRequest().authenticated()
+            )
             .httpBasic(withDefaults());
 
         return http.build();
     }
+
 
     /** Metti il CorsFilter in testa alla chain (utile dietro CDN/proxy). */
     @Bean
