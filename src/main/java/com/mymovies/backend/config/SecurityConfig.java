@@ -93,20 +93,16 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // preflight SEMPRE permesso
-                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
+            	    // Preflight sempre libero
+            	    .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
+            	    .requestMatchers("/error").permitAll()
 
-                // 🔓 GET/HEAD pubblici sulle API dei film (lettura senza login)
-                .requestMatchers(HttpMethod.GET,  "/api/films/**").permitAll()
-                .requestMatchers(HttpMethod.HEAD, "/api/films/**").permitAll()
+            	    // >>> QUI: GET pubblici sulle API
+            	    .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/**").permitAll()
 
-                // lascia /error aperto per evitare 403 anomali
-                .requestMatchers("/error").permitAll()
-
-                // tutto il resto richiede autenticazione (POST/PUT/DELETE…)
-                //.anyRequest().authenticated()
-                .anyRequest().permitAll()
-            )
+            	    // Tutto il resto autenticato (POST/PUT/DELETE…)
+            	    .anyRequest().authenticated()
+            	)
             .httpBasic(withDefaults());
 
         return http.build();
