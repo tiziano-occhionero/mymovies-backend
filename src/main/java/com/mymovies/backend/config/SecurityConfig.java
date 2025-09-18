@@ -97,6 +97,8 @@ public class SecurityConfig {
                 .requestMatchers(org.springframework.http.HttpMethod.HEAD, "/api/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers("/error").permitAll()
+                .requestMatchers("/api/health/**").permitAll() 
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/ping").permitAll()
                 .anyRequest().authenticated()
             )
             .httpBasic(withDefaults());
