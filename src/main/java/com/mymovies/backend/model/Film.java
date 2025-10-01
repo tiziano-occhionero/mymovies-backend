@@ -1,5 +1,6 @@
 package com.mymovies.backend.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.validation.constraints.NotBlank;
@@ -26,8 +27,10 @@ public class Film {
 	@NotBlank(message = "La provenienza è obbligatoria")
 	private String provenienza; // collezione o lista desideri
 
+	@Column(nullable = true)
 	private Integer tmdbId;
 
+	@Column(nullable = true)
 	private String posterPath;
 	
 	private String posterUrl;
