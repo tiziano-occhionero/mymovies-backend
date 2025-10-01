@@ -26,17 +26,18 @@ public class Film {
 	@NotBlank(message = "La provenienza è obbligatoria")
 	private String provenienza; // collezione o lista desideri
 
-	@Min(value = 1, message = "tmdbId deve essere un numero positivo")
-	private int tmdbId;
+	private Integer tmdbId;
 
 	private String posterPath;
+	
+	private String posterUrl;
 
 	// Costruttore vuoto obbligatorio per JPA
 	public Film() {
 	}
 
-	public Film(String id, String titolo, int anno, String formato, String custodia, String provenienza, int tmdbId,
-			String posterPath) {
+	public Film(String id, String titolo, int anno, String formato, String custodia, String provenienza, Integer tmdbId,
+			String posterPath, String posterUrl) {
 		this.id = id;
 		this.titolo = titolo;
 		this.anno = anno;
@@ -45,6 +46,7 @@ public class Film {
 		this.provenienza = provenienza;
 		this.tmdbId = tmdbId;
 		this.posterPath = posterPath;
+		this.posterUrl = posterUrl;
 	}
 
 	// Getters e Setters
@@ -96,11 +98,11 @@ public class Film {
 		this.provenienza = provenienza;
 	}
 
-	public int getTmdbId() {
+	public Integer getTmdbId() {
 		return tmdbId;
 	}
 
-	public void setTmdbId(int tmdbId) {
+	public void setTmdbId(Integer tmdbId) {
 		this.tmdbId = tmdbId;
 	}
 
@@ -112,10 +114,18 @@ public class Film {
 		this.posterPath = posterPath;
 	}
 
+	public String getPosterUrl() {
+		return posterUrl;
+	}
+
+	public void setPosterUrl(String posterUrl) {
+		this.posterUrl = posterUrl;
+	}
+
 	@Override
 	public String toString() {
-	    return "Film{id='%s', titolo='%s', anno=%d, formato='%s', custodia='%s', provenienza='%s', tmdbId=%d, posterPath='%s'}"
-	            .formatted(id, titolo, anno, formato, custodia, provenienza, tmdbId, posterPath);
+	    return "Film{id='%s', titolo='%s', anno=%d, formato='%s', custodia='%s', provenienza='%s', tmdbId=%d, posterPath='%s', posterUrl='%s'}"
+	            .formatted(id, titolo, anno, formato, custodia, provenienza, tmdbId, posterPath, posterUrl);
 	}
 
 

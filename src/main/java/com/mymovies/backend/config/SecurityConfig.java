@@ -94,6 +94,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(org.springframework.web.cors.CorsUtils::isPreFlightRequest).permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.GET,  "/api/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/films/custom").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.HEAD, "/api/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers("/error").permitAll()

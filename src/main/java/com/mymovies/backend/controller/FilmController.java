@@ -5,6 +5,10 @@ import com.mymovies.backend.service.FilmService;
 
 import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,10 +19,13 @@ import java.util.List;
 @CrossOrigin(origins = "*") // utile per test futuri col frontend
 public class FilmController {
 
+    private static final Logger logger = LoggerFactory.getLogger(FilmController.class);
+
     private final FilmService filmService;
 
     public FilmController(FilmService filmService) {
         this.filmService = filmService;
+        logger.info("FilmController initialized!");
     }
 
     @GetMapping
@@ -61,6 +68,13 @@ public class FilmController {
     @PostMapping
     public ResponseEntity<Film> aggiungiFilm(@Valid @RequestBody Film film) {
         return ResponseEntity.ok(filmService.saveFilm(film));
+    }
+
+    @PostMapping("/custom")
+    public ResponseEntity<Film> addCustomFilm(@Valid @RequestBody Film film) {
+        logger.info("addCustomFilm method called with film: {}", film);
+        Film savedFilm = filmService.addCustomFilm(film);
+        return new ResponseEntity<>(savedFilm, HttpStatus.CREATED);
     }
 
     @DeleteMapping("/collezione/{id}")
