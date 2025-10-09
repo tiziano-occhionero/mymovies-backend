@@ -32,7 +32,22 @@ public class FilmService {
         return filmRepository.findById(id).orElse(null);
     }
 
+    private String transformGoogleDriveUrl(String url) {
+        if (url != null && url.contains("drive.google.com/file/d/")) {
+            try {
+                String fileId = url.split("/d/")[1].split("/")[0];
+                return "https://drive.google.com/uc?export=view&id=" + fileId;
+            } catch (Exception e) {
+                // Log the error and return original URL if parsing fails
+                System.err.println("Error parsing Google Drive URL: " + url + " - " + e.getMessage());
+                return url;
+            }
+        }
+        return url;
+    }
+
     public Film saveFilm(Film film) {
+        film.setPosterUrl(transformGoogleDriveUrl(film.getPosterUrl()));
         System.out.println("▶️ Salvataggio film: " + film);
         return filmRepository.save(film);
     }
@@ -55,6 +70,7 @@ public class FilmService {
         String finalId = customId + "_" + film.getFormato() + "_" + film.getCustodia();
         film.setId(finalId);
         film.setTmdbId(null); // Make sure tmdbId is null for custom films
+        film.setPosterUrl(transformGoogleDriveUrl(film.getPosterUrl()));
         System.out.println("▶️ Salvataggio film custom: " + film);
         return filmRepository.save(film);
     }
