@@ -1,10 +1,13 @@
 package com.mymovies.backend.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 public class Film {
@@ -32,15 +35,28 @@ public class Film {
 
 	@Column(nullable = true)
 	private String posterPath;
-	
+
 	private String posterUrl;
+
+	// Nuovi campi
+	@Column(updatable = false)
+	private LocalDateTime dataInserimento;
+
+	@Column(nullable = false, columnDefinition = "boolean default false")
+	private boolean versioneSpeciale;
+
+	private Integer numeroDischi;
+
+	@Column(length = 2048)
+	private String note;
 
 	// Costruttore vuoto obbligatorio per JPA
 	public Film() {
 	}
 
-	public Film(String id, String titolo, int anno, String formato, String custodia, String provenienza, Integer tmdbId,
-			String posterPath, String posterUrl) {
+	public Film(String id, String titolo, int anno, String formato, String custodia, String provenienza,
+			Integer tmdbId, String posterPath, String posterUrl, boolean versioneSpeciale, Integer numeroDischi,
+			String note) {
 		this.id = id;
 		this.titolo = titolo;
 		this.anno = anno;
@@ -50,6 +66,14 @@ public class Film {
 		this.tmdbId = tmdbId;
 		this.posterPath = posterPath;
 		this.posterUrl = posterUrl;
+		this.versioneSpeciale = versioneSpeciale;
+		this.numeroDischi = numeroDischi;
+		this.note = note;
+	}
+
+	@PrePersist
+	protected void onCreate() {
+		this.dataInserimento = LocalDateTime.now();
 	}
 
 	// Getters e Setters
@@ -81,7 +105,7 @@ public class Film {
 		return formato;
 	}
 
-	public void setFormato(String formato) {
+  public void setFormato(String formato) {
 		this.formato = formato;
 	}
 
@@ -125,11 +149,44 @@ public class Film {
 		this.posterUrl = posterUrl;
 	}
 
-	@Override
-	public String toString() {
-	    return "Film{id='%s', titolo='%s', anno=%d, formato='%s', custodia='%s', provenienza='%s', tmdbId=%d, posterPath='%s', posterUrl='%s'}"
-	            .formatted(id, titolo, anno, formato, custodia, provenienza, tmdbId, posterPath, posterUrl);
+	// Getters e Setters per i nuovi campi
+	public LocalDateTime getDataInserimento() {
+		return dataInserimento;
 	}
 
+	public void setDataInserimento(LocalDateTime dataInserimento) {
+		this.dataInserimento = dataInserimento;
+	}
 
+	public boolean isVersioneSpeciale() {
+		return versioneSpeciale;
+	}
+
+	public void setVersioneSpeciale(boolean versioneSpeciale) {
+		this.versioneSpeciale = versioneSpeciale;
+	}
+
+	public Integer getNumeroDischi() {
+		return numeroDischi;
+	}
+
+	public void setNumeroDischi(Integer numeroDischi) {
+		this.numeroDischi = numeroDischi;
+	}
+
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
+	@Override
+	public String toString() {
+		return "Film [id=" + id + ", titolo=" + titolo + ", anno=" + anno + ", formato=" + formato + ", custodia="
+				+ custodia + ", provenienza=" + provenienza + ", tmdbId=" + tmdbId + ", posterPath=" + posterPath
+				+ ", posterUrl=" + posterUrl + ", dataInserimento=" + dataInserimento + ", versioneSpeciale="
+				+ versioneSpeciale + ", numeroDischi=" + numeroDischi + ", note=" + note + "]";
+	}
 }

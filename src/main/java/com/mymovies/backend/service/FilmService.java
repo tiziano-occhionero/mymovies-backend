@@ -47,9 +47,36 @@ public class FilmService {
     }
 
     public Film saveFilm(Film film) {
+        // Se il film è nuovo (senza ID), genera un ID custom
+        if (film.getId() == null || film.getId().trim().isEmpty()) {
+            String customId = generateCustomFilmId();
+            String finalId = customId + "_" + film.getFormato() + "_" + film.getCustodia();
+            film.setId(finalId);
+            // Assicuriamoci che non ci sia un tmdbId per coerenza con i film custom
+            film.setTmdbId(null);
+        }
+
         film.setPosterUrl(transformGoogleDriveUrl(film.getPosterUrl()));
         System.out.println("▶️ Salvataggio film: " + film);
         return filmRepository.save(film);
+    }
+
+    public Film updateFilm(String id, Film filmDetails) {
+        return filmRepository.findById(id).map(film -> {
+            film.setTitolo(filmDetails.getTitolo());
+            film.setAnno(filmDetails.getAnno());
+            film.setFormato(filmDetails.getFormato());
+            film.setCustodia(filmDetails.getCustodia());
+            film.setProvenienza(filmDetails.getProvenienza());
+            film.setTmdbId(filmDetails.getTmdbId());
+            film.setPosterPath(filmDetails.getPosterPath());
+            film.setPosterUrl(transformGoogleDriveUrl(filmDetails.getPosterUrl()));
+            film.setVersioneSpeciale(filmDetails.isVersioneSpeciale());
+            film.setNumeroDischi(filmDetails.getNumeroDischi());
+            film.setNote(filmDetails.getNote());
+            System.out.println("▶️ Aggiornamento film: " + film);
+            return filmRepository.save(film);
+        }).orElse(null);
     }
 
     @Transactional

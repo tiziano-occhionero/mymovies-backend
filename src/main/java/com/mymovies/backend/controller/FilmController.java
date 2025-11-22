@@ -77,6 +77,16 @@ public class FilmController {
         return new ResponseEntity<>(savedFilm, HttpStatus.CREATED);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Film> updateFilm(@PathVariable String id, @Valid @RequestBody Film filmDetails) {
+        Film updatedFilm = filmService.updateFilm(id, filmDetails);
+        if (updatedFilm != null) {
+            return ResponseEntity.ok(updatedFilm);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @DeleteMapping("/collezione/{id}")
     public ResponseEntity<Void> eliminaDaCollezione(@PathVariable String id) {
         filmService.deleteFilmById(id);
