@@ -61,6 +61,7 @@ public class FilmService {
         return filmRepository.save(film);
     }
 
+    @Transactional
     public Film updateFilm(String id, Film filmDetails) {
         return filmRepository.findById(id).map(film -> {
             film.setTitolo(filmDetails.getTitolo());
@@ -71,7 +72,6 @@ public class FilmService {
             film.setTmdbId(filmDetails.getTmdbId());
             film.setPosterPath(filmDetails.getPosterPath());
             film.setPosterUrl(transformGoogleDriveUrl(filmDetails.getPosterUrl()));
-            film.setVersioneSpeciale(filmDetails.isVersioneSpeciale());
             film.setNumeroDischi(filmDetails.getNumeroDischi());
             film.setNote(filmDetails.getNote());
             System.out.println("▶️ Aggiornamento film: " + film);

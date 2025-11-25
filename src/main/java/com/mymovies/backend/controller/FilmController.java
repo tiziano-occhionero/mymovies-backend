@@ -79,10 +79,12 @@ public class FilmController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Film> updateFilm(@PathVariable String id, @Valid @RequestBody Film filmDetails) {
+        logger.info("Richiesta di aggiornamento ricevuta per l'ID: {}. Dettagli: {}", id, filmDetails);
         Film updatedFilm = filmService.updateFilm(id, filmDetails);
         if (updatedFilm != null) {
             return ResponseEntity.ok(updatedFilm);
         } else {
+            logger.warn("Aggiornamento fallito: film non trovato con ID: {}", id);
             return ResponseEntity.notFound().build();
         }
     }

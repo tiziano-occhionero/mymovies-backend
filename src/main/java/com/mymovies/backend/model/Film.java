@@ -42,9 +42,6 @@ public class Film {
 	@Column(updatable = false)
 	private LocalDateTime dataInserimento;
 
-	@Column(nullable = false, columnDefinition = "boolean default false")
-	private boolean versioneSpeciale;
-
 	private Integer numeroDischi;
 
 	@Column(length = 2048)
@@ -55,7 +52,7 @@ public class Film {
 	}
 
 	public Film(String id, String titolo, int anno, String formato, String custodia, String provenienza,
-			Integer tmdbId, String posterPath, String posterUrl, boolean versioneSpeciale, Integer numeroDischi,
+			Integer tmdbId, String posterPath, String posterUrl, Integer numeroDischi,
 			String note) {
 		this.id = id;
 		this.titolo = titolo;
@@ -66,7 +63,6 @@ public class Film {
 		this.tmdbId = tmdbId;
 		this.posterPath = posterPath;
 		this.posterUrl = posterUrl;
-		this.versioneSpeciale = versioneSpeciale;
 		this.numeroDischi = numeroDischi;
 		this.note = note;
 	}
@@ -158,14 +154,6 @@ public class Film {
 		this.dataInserimento = dataInserimento;
 	}
 
-	public boolean isVersioneSpeciale() {
-		return versioneSpeciale;
-	}
-
-	public void setVersioneSpeciale(boolean versioneSpeciale) {
-		this.versioneSpeciale = versioneSpeciale;
-	}
-
 	public Integer getNumeroDischi() {
 		return numeroDischi;
 	}
@@ -186,7 +174,6 @@ public class Film {
 	public String toString() {
 		return "Film [id=" + id + ", titolo=" + titolo + ", anno=" + anno + ", formato=" + formato + ", custodia="
 				+ custodia + ", provenienza=" + provenienza + ", tmdbId=" + tmdbId + ", posterPath=" + posterPath
-				+ ", posterUrl=" + posterUrl + ", dataInserimento=" + dataInserimento + ", versioneSpeciale="
-				+ versioneSpeciale + ", numeroDischi=" + numeroDischi + ", note=" + note + "]";
+				+ ", posterUrl=" + posterUrl + ", dataInserimento=" + dataInserimento + ", numeroDischi=" + numeroDischi + ", note=" + note + "]";
 	}
 }
