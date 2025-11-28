@@ -27,7 +27,12 @@ public class DataSourceConfig {
     @Bean
     public DataSource dataSource() throws URISyntaxException {
         // Legge la variabile d'ambiente DATABASE_URL fornita da Railway
-        URI dbUri = new URI(System.getenv("DATABASE_URL"));
+        String databaseUrl = System.getenv("DATABASE_URL");
+        if (databaseUrl == null || databaseUrl.trim().isEmpty()) {
+            throw new IllegalStateException("ERRORE CRITICO: La variabile d'ambiente DATABASE_URL non e' impostata o e' vuota. Assicurarsi che il servizio database sia correttamente collegato (linked) al backend su Railway.");
+        }
+
+        URI dbUri = new URI(databaseUrl);
 
         // Estrae username e password dalla parte userinfo dell'URI
         String username = dbUri.getUserInfo().split(":")[0];
